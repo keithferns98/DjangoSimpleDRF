@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, APIView
 from .models import Post
 from .serializers import PostSerializer
 from django.shortcuts import get_object_or_404
+from rest_framework import viewsets
 
 
 @api_view(['GET', 'POST'])
@@ -122,3 +123,43 @@ class PostRetrieveUpdateDeleteView(generics.GenericAPIView,
     #                     "data": serializer.data}
     #         return Response(data=response, status=status.HTTP_201_CREATED)
     #     return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PostViewSet(viewsets.ViewSet):
+
+    def list(self, request: Request,):
+        queryset = Post.objects.all()
+        serializer = PostSerializer(instance=queryset, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    def retrieve(self, request: Request, pk=None):
+        post = get_object_or_404(Post, pk=pk)
+        serializer = PostSerializer(instance=post)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    def create(self, request: Request):
+        data = request.data
+        serializer = PostSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            response = {
+                "message": "Post updated Successfully",
+                "post_data": serializer.data
+            }
+        return Response(data=response, status=status.HTTP_200_OK)
+
+    def update(self, request: Request, pk=None):
+        data = request.data
+        post = get_object_or_404(Post, pk=pk)
+        serializer = PostSerializer(instance=post, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            response = {"Message": f"Post id:{pk} record updated",
+                        "data": serializer.data}
+            return Response(data=response, status=status.HTTP_201_CREATED)
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request: Request, pk: None):
+        post = get_object_or_404(Post, pk=pk)
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
