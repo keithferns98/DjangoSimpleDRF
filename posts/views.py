@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics, mixins
 from rest_framework.decorators import api_view, APIView
 from .models import Post
+from rest_framework.permissions import IsAuthenticated
 from .serializers import PostSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
@@ -38,6 +39,7 @@ class PostListCreateView(generics.GenericAPIView, mixins.ListModelMixin,
     """
     APIView for listing all posts and creating a new post.
     """
+    permission_classes = [IsAuthenticated]
     serializer_class = PostSerializer
     queryset = Post.objects.all()
 
